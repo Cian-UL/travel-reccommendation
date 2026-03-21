@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Travel Recommendation</title>
+</head>
+<body>
+<h1>Find Affordable Destinations</h1>
+<form action="/search" method="get">
+    <label>Budget (€):
+        <input type="number" name="budget" required />
+    </label><br><br>
+
+    <label>Origin City:
+        <input type="text" name="originCity" required />
+    </label><br><br>
+
+    <label>Duration (nights):
+        <input type="number" name="duration" required />
+    </label><br><br>
+
+    <label>Number of Travelers:
+        <input type="number" name="travelers" required />
+    </label><br><br>
+
+    <button type="submit">Search</button>
+</form>
+</body>
+</html>
