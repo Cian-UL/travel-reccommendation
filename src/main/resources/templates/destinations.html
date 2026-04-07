@@ -8,7 +8,7 @@
 <h1>Find Affordable Destinations</h1>
 <form action="/search" method="get">
     <label>Budget (€):
-        <input type="number" name="budget" required />
+        <input type="number" name="budget" min = "1" step = "any" required />
     </label><br><br>
 
     <label>Origin City:
@@ -16,11 +16,11 @@
     </label><br><br>
 
     <label>Duration (nights):
-        <input type="number" name="duration" required />
+        <input type="number" name="duration" min = "1" max = "30" required />
     </label><br><br>
 
     <label>Number of Travelers:
-        <input type="number" name="travelers" required />
+        <input type="number" name="travelers" min = "1" max = "20" required />
     </label><br><br>
 
     <button type="submit">Search</button>

@@ -1,6 +1,10 @@
 package com.cian.travel_recommendation.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
 
 @Entity
@@ -12,18 +16,26 @@ public class Destination {
     private Long id;
 
     @Column(name="city_name", length = 100, nullable = false)
+    @NotBlank(message = "City name is required")
     private String cityName;
 
     @Column(name="country_name", length = 100, nullable = false)
+    @NotBlank(message = "Country name is required")
     private String countryName;
 
-    @Column(name = "flight_cost_estimate", precision = 10, scale = 2)
+    @Column(name = "flight_cost_estimate", precision = 10, scale = 2, nullable = false)
+    @NotNull
+    @DecimalMin(value = "1.0", message = "Flight cost must be at least 1.0")
     private BigDecimal flightCostEstimate;
 
     @Column(name = "accommodation_cost_per_night", precision = 10, scale = 2, nullable = false)
+    @NotNull
+    @DecimalMin(value = "1.0", message = "Accommodation cost must be at least 1.0")
     private BigDecimal accommodationCostPerNight;
 
-    @Column(name = "daily_cost", precision = 100, scale = 2, nullable = false)
+    @Column(name = "daily_cost", precision = 10, scale = 2, nullable = false)
+    @NotNull
+    @DecimalMin(value = "1.0", message = "Daily cost must be at least 1.0")
     private BigDecimal dailyCost;
 
     public Long getId() { return id; }
