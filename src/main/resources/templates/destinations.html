@@ -2,28 +2,417 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Travel Recommendation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wandr — Find Your Next Adventure</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --sand: #F5ECD7;
+            --sand-dark: #E8D5B0;
+            --ocean: #1A6B8A;
+            --ocean-dark: #0D4F68;
+            --coral: #E8623A;
+            --coral-dark: #C94E28;
+            --dusk: #2C3E50;
+            --white: #FFFDF9;
+            --text: #2C2C2C;
+            --text-muted: #7A7A7A;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--sand);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background texture */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                    radial-gradient(ellipse at 20% 50%, rgba(26, 107, 138, 0.08) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 20%, rgba(232, 98, 58, 0.08) 0%, transparent 50%),
+                    radial-gradient(ellipse at 60% 80%, rgba(26, 107, 138, 0.06) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Nav */
+        nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 4rem;
+            border-bottom: 1px solid rgba(44, 62, 80, 0.1);
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--ocean-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-logo span {
+            color: var(--coral);
+        }
+
+        .nav-tagline {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 5rem 2rem 3rem;
+        }
+
+        .hero-eyebrow {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--coral);
+            margin-bottom: 1.2rem;
+            padding: 0.3rem 1rem;
+            border: 1px solid rgba(232, 98, 58, 0.3);
+            border-radius: 2rem;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            font-weight: 700;
+            color: var(--dusk);
+            line-height: 1.1;
+            margin-bottom: 1.2rem;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--ocean);
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 480px;
+            margin: 0 auto 3rem;
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* Decorative dots */
+        .hero-dots {
+            position: absolute;
+            top: 4rem;
+            right: 8%;
+            display: grid;
+            grid-template-columns: repeat(4, 8px);
+            gap: 8px;
+            opacity: 0.2;
+        }
+
+        .hero-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--ocean);
+            display: block;
+        }
+
+        /* Search card */
+        .search-container {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 1.5rem 5rem;
+        }
+
+        .search-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 2.5rem 2.5rem 2rem;
+            box-shadow:
+                    0 4px 6px rgba(44, 62, 80, 0.04),
+                    0 20px 60px rgba(44, 62, 80, 0.1),
+                    0 0 0 1px rgba(44, 62, 80, 0.06);
+        }
+
+        .search-card-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--sand-dark);
+        }
+
+        .search-card-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--dusk);
+            margin-bottom: 0.3rem;
+        }
+
+        .search-card-header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.6rem;
+            border: 1.5px solid var(--sand-dark);
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text);
+            background: var(--sand);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--ocean);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(26, 107, 138, 0.1);
+        }
+
+        input::placeholder {
+            color: #BBB;
+            font-weight: 300;
+        }
+
+        .origin-hint {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        .origin-hint strong {
+            color: var(--ocean);
+        }
+
+        .btn-search {
+            width: 100%;
+            padding: 1rem;
+            background: var(--coral);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-search:hover {
+            background: var(--coral-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(232, 98, 58, 0.35);
+        }
+
+        .btn-search:active {
+            transform: translateY(0);
+        }
+
+        /* Stats strip */
+        .stats-strip {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 2rem;
+            border-top: 1px solid rgba(44, 62, 80, 0.08);
+            margin-top: 1rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--ocean-dark);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-eyebrow { animation: fadeUp 0.5s ease both; }
+        .hero h1 { animation: fadeUp 0.5s 0.1s ease both; }
+        .hero p { animation: fadeUp 0.5s 0.2s ease both; }
+        .search-card { animation: fadeUp 0.5s 0.3s ease both; }
+
+        @media (max-width: 600px) {
+            nav { padding: 1.2rem 1.5rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .search-card { padding: 1.8rem 1.5rem; }
+            .stats-strip { gap: 2rem; }
+            .hero-dots { display: none; }
+        }
+    </style>
 </head>
 <body>
-<h1>Find Affordable Destinations</h1>
-<form action="/search" method="get">
-    <label>Budget (€):
-        <input type="number" name="budget" min = "1" step = "any" required />
-    </label><br><br>
 
-    <label>Origin City:
-        <input type="text" name="originCity" required />
-    </label><br><br>
+<nav>
+    <div class="nav-logo">Wand<span>r</span></div>
+    <div class="nav-tagline">Budget Travel Made Simple</div>
+</nav>
 
-    <label>Duration (nights):
-        <input type="number" name="duration" min = "1" max = "30" required />
-    </label><br><br>
+<section class="hero">
+    <div class="hero-dots">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="hero-eyebrow">✦ Europe Awaits</div>
+    <h1>Where will your<br><em>budget</em> take you?</h1>
+    <p>Enter your budget and travel details — we'll find every European destination you can actually afford.</p>
+</section>
 
-    <label>Number of Travelers:
-        <input type="number" name="travelers" min = "1" max = "20" required />
-    </label><br><br>
+<div class="search-container">
+    <div class="search-card">
+        <div class="search-card-header">
+            <h2>Plan Your Trip</h2>
+            <p>All prices include flights, accommodation and daily expenses</p>
+        </div>
 
-    <button type="submit">Search</button>
-</form>
+        <form action="/search" method="get">
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="budget">Total Budget</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">€</span>
+                        <input type="number" id="budget" name="budget" min="1" step="any"
+                               placeholder="e.g. 1500" required />
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="originCity">Flying From</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">✈</span>
+                        <input type="text" id="originCity" name="originCity"
+                               placeholder="Dublin, Cork or Shannon" required />
+                    </div>
+                    <p class="origin-hint">Currently supporting <strong>Dublin</strong>, <strong>Cork</strong> and <strong>Shannon</strong></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="duration">Nights Away</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🌙</span>
+                        <input type="number" id="duration" name="duration"
+                               min="1" max="30" placeholder="7" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="travelers">Travellers</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">👤</span>
+                        <input type="number" id="travelers" name="travelers"
+                               min="1" max="20" placeholder="2" required />
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-search">
+                Find Destinations ›
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="stats-strip">
+    <div class="stat">
+        <span class="stat-number">15</span>
+        <span class="stat-label">Destinations</span>
+    </div>
+    <div class="stat">
+        <span class="stat-number">3</span>
+        <span class="stat-label">Origin Cities</span>
+    </div>
+    <div class="stat">
+        <span class="stat-number">€0</span>
+        <span class="stat-label">Hidden Fees</span>
+    </div>
+</div>
+
 </body>
 </html>

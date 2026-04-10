@@ -2,11 +2,159 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Error</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wandr — Something went wrong</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sand: #F5ECD7;
+      --sand-dark: #E8D5B0;
+      --ocean: #1A6B8A;
+      --ocean-dark: #0D4F68;
+      --coral: #E8623A;
+      --coral-dark: #C94E28;
+      --dusk: #2C3E50;
+      --white: #FFFDF9;
+      --text: #2C2C2C;
+      --text-muted: #7A7A7A;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--sand);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+              radial-gradient(ellipse at 20% 50%, rgba(26, 107, 138, 0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 20%, rgba(232, 98, 58, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5rem 4rem;
+      border-bottom: 1px solid rgba(44, 62, 80, 0.1);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--ocean-dark);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--coral); }
+
+    .error-container {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .error-card {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 3.5rem;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow:
+              0 4px 6px rgba(44, 62, 80, 0.04),
+              0 20px 60px rgba(44, 62, 80, 0.1);
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .error-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-card h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--dusk);
+      margin-bottom: 1rem;
+    }
+
+    .error-message {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-weight: 300;
+      margin-bottom: 2rem;
+      padding: 1rem 1.2rem;
+      background: var(--sand);
+      border-radius: 10px;
+      border-left: 3px solid var(--coral);
+      text-align: left;
+    }
+
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.85rem 2rem;
+      background: var(--coral);
+      color: white;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-home:hover {
+      background: var(--coral-dark);
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .error-card { padding: 2.5rem 1.8rem; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Oops, something went wrong</h1>
-  <p th:text="${error} ?: 'An unexpected error occurred.'"></p>
-  <a href="/">Go back and try again</a>
+
+<nav>
+  <a th:href="@{/}" class="nav-logo">Wand<span>r</span></a>
+</nav>
+
+<div class="error-container">
+  <div class="error-card">
+    <span class="error-icon">⚠️</span>
+    <h1>Something went wrong</h1>
+    <div class="error-message" th:text="${error} ?: 'An unexpected error occurred.'"></div>
+    <a th:href="@{/}" class="btn-home">← Back to Search</a>
+  </div>
+</div>
+
 </body>
 </html>

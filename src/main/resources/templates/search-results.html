@@ -1,24 +1,404 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><title>Search Results</title></head>
-<body>
-<h1>Affordable Destinations</h1>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wandr — Your Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<div th:if="${#lists.isEmpty(searchResults)}">
-    <p><strong>No destinations within your budget. Try increasing it!</strong></p>
+        :root {
+            --sand: #F5ECD7;
+            --sand-dark: #E8D5B0;
+            --ocean: #1A6B8A;
+            --ocean-dark: #0D4F68;
+            --coral: #E8623A;
+            --coral-dark: #C94E28;
+            --dusk: #2C3E50;
+            --white: #FFFDF9;
+            --text: #2C2C2C;
+            --text-muted: #7A7A7A;
+            --green: #2D8A5E;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--sand);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                    radial-gradient(ellipse at 20% 50%, rgba(26, 107, 138, 0.08) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 20%, rgba(232, 98, 58, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 4rem;
+            border-bottom: 1px solid rgba(44, 62, 80, 0.1);
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--ocean-dark);
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+
+        .nav-logo span { color: var(--coral); }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.2rem;
+            background: transparent;
+            border: 1.5px solid var(--ocean);
+            color: var(--ocean);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn-back:hover {
+            background: var(--ocean);
+            color: white;
+        }
+
+        /* Results header */
+        .results-header {
+            position: relative;
+            z-index: 1;
+            padding: 3rem 4rem 1.5rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        .results-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: var(--dusk);
+            line-height: 1.2;
+        }
+
+        .results-header h1 em {
+            font-style: italic;
+            color: var(--ocean);
+        }
+
+        .results-count {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 500;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Empty state */
+        .empty-state {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 5rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .empty-state h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--dusk);
+            margin-bottom: 0.8rem;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        /* Results grid */
+        .results-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem 4rem 4rem;
+        }
+
+        /* Destination card */
+        .destination-card {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow:
+                    0 2px 4px rgba(44, 62, 80, 0.04),
+                    0 8px 30px rgba(44, 62, 80, 0.08);
+            transition: transform 0.25s, box-shadow 0.25s;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .destination-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                    0 4px 8px rgba(44, 62, 80, 0.06),
+                    0 20px 50px rgba(44, 62, 80, 0.14);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--ocean-dark) 0%, var(--ocean) 100%);
+            padding: 1.5rem 1.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::after {
+            content: '✈';
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2.5rem;
+            opacity: 0.12;
+        }
+
+        .card-country {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(255,255,255,0.65);
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+        }
+
+        .card-city {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .card-body {
+            padding: 1.5rem 1.8rem;
+        }
+
+        /* Cost breakdown */
+        .cost-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .cost-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cost-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .cost-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .cost-icon.flight { background: rgba(26, 107, 138, 0.1); }
+        .cost-icon.hotel { background: rgba(232, 98, 58, 0.1); }
+        .cost-icon.daily { background: rgba(45, 138, 94, 0.1); }
+
+        .cost-value {
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .cost-divider {
+            height: 1px;
+            background: var(--sand-dark);
+            margin: 0.8rem 0;
+        }
+
+        /* Total row */
+        .total-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1rem;
+            background: var(--sand);
+            border-radius: 10px;
+        }
+
+        .total-label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .total-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ocean-dark);
+        }
+
+        /* Budget remaining badge */
+        .budget-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 0.8rem;
+            font-size: 0.75rem;
+            color: var(--green);
+            font-weight: 500;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .destination-card:nth-child(1) { animation-delay: 0.05s; }
+        .destination-card:nth-child(2) { animation-delay: 0.1s; }
+        .destination-card:nth-child(3) { animation-delay: 0.15s; }
+        .destination-card:nth-child(4) { animation-delay: 0.2s; }
+        .destination-card:nth-child(5) { animation-delay: 0.25s; }
+        .destination-card:nth-child(6) { animation-delay: 0.3s; }
+
+        .btn-search-again {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.7rem 1.5rem;
+            background: var(--coral);
+            color: white;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .btn-search-again:hover {
+            background: var(--coral-dark);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 1.2rem 1.5rem; }
+            .results-header { padding: 2rem 1.5rem 1rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .results-grid { padding: 1rem 1.5rem 3rem; grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a th:href="@{/}" class="nav-logo">Wand<span>r</span></a>
+    <a th:href="@{/}" class="btn-back">← Search Again</a>
+</nav>
+
+<!-- Empty state -->
+<div th:if="${#lists.isEmpty(searchResults)}" class="empty-state">
+    <span class="empty-icon">🌍</span>
+    <h2>No destinations found</h2>
+    <p>Your budget didn't quite stretch to any destinations this time.<br>Try increasing your budget or reducing the number of nights.</p>
+    <a th:href="@{/}" class="btn-search-again">Try a Different Search</a>
 </div>
 
+<!-- Results -->
 <div th:if="${!#lists.isEmpty(searchResults)}">
-    <div th:each="result : ${searchResults}" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc;">
-        <h2 th:text="${result.destination.cityName + ', ' + result.destination.countryName}"></h2>
-        <p><strong>Flights:</strong> €<span th:text="${result.flightCost}"></span></p>
-        <p><strong>Hotels:</strong> €<span th:text="${result.accommodationCost}"></span></p>
-        <p><strong>Food/Transport:</strong> €<span th:text="${result.dailyCost}"></span></p>
-        <hr>
-        <p><strong>Total Cost:</strong> €<span th:text="${result.totalCost}"></span></p>
+    <div class="results-header">
+        <div>
+            <h1>Your <em>affordable</em><br>destinations</h1>
+        </div>
+        <div class="results-count"
+             th:text="${#lists.size(searchResults)} + ' destination' + (${#lists.size(searchResults)} != 1 ? 's' : '') + ' found'">
+        </div>
+    </div>
+
+    <div class="results-grid">
+        <div th:each="result : ${searchResults}" class="destination-card">
+            <div class="card-header">
+                <div class="card-country" th:text="${result.destination.countryName}"></div>
+                <div class="card-city" th:text="${result.destination.cityName}"></div>
+            </div>
+            <div class="card-body">
+                <div class="cost-breakdown">
+                    <div class="cost-row">
+                        <span class="cost-label">
+                            <span class="cost-icon flight">✈</span>
+                            Flights
+                        </span>
+                        <span class="cost-value">€<span th:text="${result.flightCost}"></span></span>
+                    </div>
+                    <div class="cost-row">
+                        <span class="cost-label">
+                            <span class="cost-icon hotel">🏨</span>
+                            Accommodation
+                        </span>
+                        <span class="cost-value">€<span th:text="${result.accommodationCost}"></span></span>
+                    </div>
+                    <div class="cost-row">
+                        <span class="cost-label">
+                            <span class="cost-icon daily">🍽</span>
+                            Food &amp; Transport
+                        </span>
+                        <span class="cost-value">€<span th:text="${result.accommodationCost}"></span></span>
+                    </div>
+                </div>
+                <div class="cost-divider"></div>
+                <div class="total-row">
+                    <span class="total-label">Total Cost</span>
+                    <span class="total-value">€<span th:text="${result.totalCost}"></span></span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<br><a th:href="@{/}">Search Again</a>
 </body>
 </html>
