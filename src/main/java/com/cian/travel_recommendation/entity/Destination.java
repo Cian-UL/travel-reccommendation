@@ -38,12 +38,23 @@ public class Destination {
     @DecimalMin(value = "1.0", message = "Daily cost must be at least 1.0")
     private BigDecimal dailyCost;
 
+    @Column(name = "latitude", nullable = false)
+    @NotNull
+    private Double latitude;
+
+    @Column(name = "longitude", nullable = false)
+    @NotNull
+    private Double longitude;
+
     public Long getId() { return id; }
     public String getCityName() { return cityName; }
     public String getCountryName() { return countryName; }
     public BigDecimal getFlightCostEstimate() { return flightCostEstimate; }
     public BigDecimal getAccommodationCostPerNight() { return accommodationCostPerNight; }
     public BigDecimal getDailyCost() { return dailyCost; }
+    public Double getLongitude() {return longitude;}
+    public Double getLatitude() {return latitude;}
+
 
     public void setId(Long id) { this.id = id; }
     public void setCityName(String cityName) { this.cityName = cityName; }
@@ -51,4 +62,11 @@ public class Destination {
     public void setFlightCostEstimate(BigDecimal flightCostEstimate) { this.flightCostEstimate = flightCostEstimate; }
     public void setAccommodationCostPerNight(BigDecimal accommodationCostPerNight) { this.accommodationCostPerNight = accommodationCostPerNight; }
     public void setDailyCost(BigDecimal dailyCost) { this.dailyCost = dailyCost; }
+    public void setLongitude(Double longitude) {this.longitude = longitude;}
+    public void setLatitude(Double latitude) {this.latitude = latitude;}
+
+
+
+
+
 }

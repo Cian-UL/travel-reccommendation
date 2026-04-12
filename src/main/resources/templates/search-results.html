@@ -326,6 +326,15 @@
             background: var(--coral-dark);
             transform: translateY(-1px);
         }
+        a.card-city {
+            color: white !important;
+            text-decoration: none;
+        }
+
+        a.card-city:hover {
+            text-decoration: underline;
+            cursor: pointer;
+        }
 
         @media (max-width: 768px) {
             nav { padding: 1.2rem 1.5rem; }
@@ -364,7 +373,9 @@
         <div th:each="result : ${searchResults}" class="destination-card">
             <div class="card-header">
                 <div class="card-country" th:text="${result.destination.countryName}"></div>
-                <div class="card-city" th:text="${result.destination.cityName}"></div>
+                <a th:href="@{/destination/{id}(id=${result.destination.id})}"
+                   th:text="${result.destination.cityName}"
+                   class="card-city"></a>
             </div>
             <div class="card-body">
                 <div class="cost-breakdown">
