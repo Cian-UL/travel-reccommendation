@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name="DESTINATION")
@@ -46,6 +47,9 @@ public class Destination {
     @NotNull
     private Double longitude;
 
+    @Column(name = "highlights", length = 500)
+    private String highlights;
+
     public Long getId() { return id; }
     public String getCityName() { return cityName; }
     public String getCountryName() { return countryName; }
@@ -66,7 +70,18 @@ public class Destination {
     public void setLatitude(Double latitude) {this.latitude = latitude;}
 
 
+    public String getHighlights() {
+        return highlights;
+    }
 
-
+    public void setHighlights(String highlights) {
+        this.highlights = highlights;
+    }
+    public List<String> getHighlightList() {
+        if (highlights == null || highlights.isBlank()) {
+            return List.of();
+        }
+        return List.of(highlights.split(","));
+    }
 
 }
