@@ -29,7 +29,6 @@ public class MockFlightPriceService implements FlightPriceService {
         basePrices.put("Reykjavik", new BigDecimal("220.00"));
         basePrices.put("Zurich", new BigDecimal("240.00"));
 
-        // Origin adjustments
         originAdjustments.put("Dublin", new BigDecimal("-30.00"));
         originAdjustments.put("Cork", new BigDecimal("-10.00"));
         originAdjustments.put("Shannon", new BigDecimal("-15.00"));
