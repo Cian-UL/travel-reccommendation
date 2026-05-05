@@ -14,7 +14,7 @@
 	<name>travel-recommendation</name>
 	<description>Travel Recommendation Platform</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>23</java.version>
 	</properties>
 	<dependencies>
 
@@ -70,6 +70,7 @@
 			<version>3.13.2</version>
 			<scope>test</scope>
 		</dependency>
+
 
 	</dependencies>
 

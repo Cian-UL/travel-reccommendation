@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.util.List;
 
+// Unit tests for SearchService using mocked dependencies
 @ExtendWith(MockitoExtension.class)
 public class SearchServiceTest {
     @Mock
@@ -27,6 +28,7 @@ public class SearchServiceTest {
     @InjectMocks
     private SearchService searchService;
 
+    // Test that a destination within budget appears in results
     @Test
     void destinationWithinBudgetAppearsInResults() {
         Destination destination = new Destination();
@@ -47,6 +49,7 @@ public class SearchServiceTest {
         assertEquals("Budapest", results.get(0).getDestination().getCityName());
     }
 
+    // Test that a destination exceeding budget is excluded
     @Test
     void destinationOverBudgetNotPresent(){
         Destination destination = new Destination();
@@ -65,6 +68,7 @@ public class SearchServiceTest {
         assertTrue(results.isEmpty());
     }
 
+    // Test that results are sorted by total cost (cheapest first)
     @Test
     void resultsSortedCheapestFirst() {
         Destination destination = new Destination();
@@ -92,6 +96,7 @@ public class SearchServiceTest {
         assertEquals("Warsaw", results.get(0).getDestination().getCityName());
     }
 
+    // Test that flight cost is multiplied by number of travelers
     @Test
     void multipliedFlightCostPerTraveller(){
         Destination destination = new Destination();
@@ -102,7 +107,7 @@ public class SearchServiceTest {
 
         when(destinationRepo.findAll()).thenReturn(List.of(destination));
         when(flightPriceService.getFlightPrice("Dublin", "Budapest"))
-        .thenReturn(new BigDecimal("70.00"));
+                .thenReturn(new BigDecimal("70.00"));
 
         List<SearchResult> results = searchService.findDestinationsWithinBudget(
                 new BigDecimal("5000.00"), "Dublin", 1, 2
@@ -111,6 +116,7 @@ public class SearchServiceTest {
         assertEquals(new BigDecimal("140.00"),results.get(0).getFlightCost());
     }
 
+    // Test that accommodation cost is multiplied by travelers and duration
     @Test
     void multipliedAccommodationPerTraveller(){
         Destination destination = new Destination();
@@ -130,6 +136,7 @@ public class SearchServiceTest {
         assertEquals(new BigDecimal("240.00"),results.get(0).getAccommodationCost());
     }
 
+    // Test that daily living cost is multiplied by travelers and duration
     @Test
     void multipliedDailyCostPerTraveller(){
         Destination destination = new Destination();

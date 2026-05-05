@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.math.BigDecimal;
 import java.util.List;
 
+// Handles search and homepage requests
 @Controller
 @Validated
 public class SearchController {
@@ -22,11 +23,13 @@ public class SearchController {
         this.searchService = searchService;
     }
 
+    // Display the homepage/search form
     @GetMapping("/")
     public String home() {
         return "destinations";
     }
 
+    // Process search form submission with budget and trip parameters
     @GetMapping("/search")
     public String search(@RequestParam("budget") @Min(1) BigDecimal budget,
                          @RequestParam("originCity") String originCity,

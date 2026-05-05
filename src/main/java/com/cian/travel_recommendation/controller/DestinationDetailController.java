@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.time.LocalDate;
 import java.util.List;
 
+// Handles requests for individual destination detail pages
 @Controller
 public class DestinationDetailController {
 
@@ -27,16 +28,23 @@ public class DestinationDetailController {
         this.hotelPriceService = hotelPriceService;
     }
 
+    // Display detail page for a destination by ID
     @GetMapping("/destination/{id}")
     public String detail(@PathVariable Long id, Model model) {
+        // Fetch destination or throw exception if not found
         Destination destination = destinationRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Destination not found: " + id));
 
+        // Fetch attractions near the destination
         List<Attraction> attractions = attractionService.getAttractions(
                 destination.getLatitude(), destination.getLongitude()
         );
+
+        // Set hotel check-in as tomorrow, check-out as day after
         LocalDate checkin = LocalDate.now().plusDays(1);
         LocalDate checkout = checkin.plusDays(1);
+
+        // Fetch live hotel prices for single traveler
         List<HotelPrice> hotelPrices = hotelPriceService.getHotelPrices(
                 destination.getLatitude(),
                 destination.getLongitude(),
@@ -46,6 +54,7 @@ public class DestinationDetailController {
         );
         model.addAttribute("hotelPrices", hotelPrices);
 
+        // Use live price if available, otherwise use static estimate
         if (!hotelPrices.isEmpty()) {
             model.addAttribute("liveAccommodationCost", hotelPrices.get(0).getPricePerNight());
         } else {

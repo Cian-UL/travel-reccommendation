@@ -1,5 +1,6 @@
 package com.cian.travel_recommendation.dto;
 
+// Represents a single attraction from OpenTripMap API
 public class Attraction {
 
     private String name;
@@ -25,6 +26,7 @@ public class Attraction {
     public String getImageUrl() { return imageUrl; }
     public String getWebsiteUrl() { return websiteUrl; }
 
+    // Generate Google search URL for the attraction
     public String getSearchUrl() {
         if (name != null && !name.isBlank()) {
             return "https://www.google.com/search?q=" + name.replace(" ", "+");
@@ -32,6 +34,7 @@ public class Attraction {
         return null;
     }
 
+    // Return official website if available, otherwise fall back to Google search
     public String getBestUrl() {
         if (websiteUrl != null && !websiteUrl.isBlank()) {
             return websiteUrl;

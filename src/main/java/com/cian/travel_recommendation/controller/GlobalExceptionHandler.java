@@ -5,9 +5,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+// Global exception handler for all controllers
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Handle validation constraint violations from @Min and similar annotations
     @ExceptionHandler(ConstraintViolationException.class)
     public String handleConstraintViolation(ConstraintViolationException ex, Model model) {
 
@@ -16,6 +18,7 @@ public class GlobalExceptionHandler {
         return "error";
     }
 
+    // Catch-all for any other exceptions
     @ExceptionHandler(Exception.class)
     public String handleGeneralException(Exception ex, Model model) {
 

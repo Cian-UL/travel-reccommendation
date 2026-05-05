@@ -3,6 +3,7 @@ package com.cian.travel_recommendation.dto;
 import com.cian.travel_recommendation.entity.Destination;
 import java.math.BigDecimal;
 
+// Represents a single search result with all costs broken down
 public class SearchResult {
     private Destination destination;
     private BigDecimal flightCost;

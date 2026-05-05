@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
+// JPA entity representing a travel destination
 @Entity
 @Table(name="DESTINATION")
 public class Destination {
@@ -77,6 +78,8 @@ public class Destination {
     public void setHighlights(String highlights) {
         this.highlights = highlights;
     }
+
+    // Parse highlights as a comma-separated list
     public List<String> getHighlightList() {
         if (highlights == null || highlights.isBlank()) {
             return List.of();

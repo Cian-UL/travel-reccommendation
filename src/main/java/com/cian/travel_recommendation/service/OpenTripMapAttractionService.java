@@ -9,6 +9,7 @@ import org.springframework.web.client.RestClient;
 import java.util.ArrayList;
 import java.util.List;
 
+// Fetches attractions from OpenTripMap API
 @Service
 public class OpenTripMapAttractionService implements AttractionService {
 
@@ -25,6 +26,7 @@ public class OpenTripMapAttractionService implements AttractionService {
     @Override
     public List<Attraction> getAttractions(double latitude, double longitude) {
         try {
+            // Get nearby attractions within 15km radius
             JsonNode response = restClient.get()
                     .uri("/radius?radius=15000&lon={lon}&lat={lat}&kinds=cultural,historic,architecture,natural,religion,monuments_and_memorials&limit=100&rate=3&apikey={key}",
                             longitude, latitude, apiKey)
@@ -34,6 +36,7 @@ public class OpenTripMapAttractionService implements AttractionService {
             List<Attraction> attractions = new ArrayList<>();
 
             if (response != null && response.has("features")) {
+                // Extract XIDs (place identifiers) from search results
                 List<String> xids = new ArrayList<>();
                 for (JsonNode feature : response.get("features")) {
                     JsonNode properties = feature.get("properties");
@@ -46,10 +49,10 @@ public class OpenTripMapAttractionService implements AttractionService {
                     }
                 }
 
-                xids.sort((a, b) -> 0);
-
+                // Limit to top 10 attractions for detail fetching
                 List<String> topXids = xids.size() > 10 ? xids.subList(0, 10) : xids;
 
+                // Fetch detailed information for each attraction
                 for (String xid : topXids) {
                     Attraction detail = fetchPlaceDetail(xid);
                     if (detail != null) {
@@ -57,6 +60,7 @@ public class OpenTripMapAttractionService implements AttractionService {
                     }
                 }
 
+                // Sort by rating and cap at 10 results
                 attractions.sort((a, b) -> Integer.compare(b.getRating(), a.getRating()));
 
                 if (attractions.size() > 10) {
@@ -71,6 +75,7 @@ public class OpenTripMapAttractionService implements AttractionService {
         }
     }
 
+    // Fetch full details for a single attraction by XID
     private Attraction fetchPlaceDetail(String xid) {
         try {
             JsonNode detail = restClient.get()
@@ -87,9 +92,11 @@ public class OpenTripMapAttractionService implements AttractionService {
                 return null;
             }
 
+            // Extract category from kinds field
             String category = detail.has("kinds") ? detail.get("kinds").asText().split(",")[0] : "attraction";
             int rating = detail.has("rate") ? detail.get("rate").asInt() : 0;
 
+            // Get Wikipedia extract up to 200 chars
             String description = null;
             if (detail.has("wikipedia_extracts") && detail.get("wikipedia_extracts").has("text")) {
                 description = detail.get("wikipedia_extracts").get("text").asText();
@@ -98,11 +105,13 @@ public class OpenTripMapAttractionService implements AttractionService {
                 }
             }
 
+            // Get preview image
             String imageUrl = null;
             if (detail.has("preview") && detail.get("preview").has("source")) {
                 imageUrl = detail.get("preview").get("source").asText();
             }
 
+            // Get official website URL
             String websiteUrl = null;
             if (detail.has("url") && !detail.get("url").asText().isBlank()) {
                 websiteUrl = detail.get("url").asText();
