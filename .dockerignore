@@ -1,0 +1,26 @@
+# Build output - rebuilt inside the image, never copy the host's version
+target/
+
+# IDE and editor noise
+.idea/
+*.iml
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Local environment files - secrets must never enter the image
+.env
+
+# OS clutter
+.DS_Store
+Thumbs.db
+
+# Docker files themselves do not need to be in the build context
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Logs
+*.log

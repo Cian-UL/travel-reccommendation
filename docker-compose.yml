@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: wandr-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: travel_project_database
+    ports:
+      # Host 5433 maps to container 5432, matching your local convention so
+      # you can still connect from a database tool on localhost:5433 if you want.
+      - "5433:5432"
+    volumes:
+      - wandr-pgdata:/var/lib/postgresql
+    healthcheck:
+      # The app must not start until Postgres is actually accepting
+      # connections, not merely until the container process exists.
+      test: ["CMD-SHELL", "pg_isready -U postgres -d travel_project_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: wandr-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Inside the compose network the database host is the service name
+      # "postgres" on its internal port 5432, not localhost:5433.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/travel_project_database
+      DB_PASSWORD: ${DB_PASSWORD}
+      OPENTRIPMAP_KEY: ${OPENTRIPMAP_KEY}
+      LITEAPI_KEY: ${LITEAPI_KEY}
+    ports:
+      - "8080:8080"
+
+volumes:
+  wandr-pgdata:
