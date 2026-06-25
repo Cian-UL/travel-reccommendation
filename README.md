@@ -1,12 +1,16 @@
 # Wandr
 
+![CI](https://github.com/Cian-UL/travel-reccommendation/actions/workflows/ci.yml/badge.svg)
+
+**[Live demo →](https://travel-reccommendation-production.up.railway.app/)**
+
 A budget-first European travel recommendation platform.
 
 Wandr inverts the standard online travel agency model. Instead of asking *"where do you want to go?"* and revealing cost progressively, Wandr asks *"how much can you spend?"* and surfaces destinations whose total trip cost - flights, accommodation, and daily living - falls within that budget.
 
 Each destination links to a detail page that aggregates cost information, attraction recommendations from OpenTripMap, and live hotel pricing from LiteAPI into a single three-column layout, removing the need to consult separate flight, hotel, and attraction sites.
 
-This project was built as the dissertation artefact for an MSc in Software Development (International Systems) at the University of Limerick.
+This project was built as the dissertation artefact for an MSc in Software Development (International Systems) at the University of Limerick, and has been extended since with containerisation, continuous integration, and a live deployment.
 
 ---
 
@@ -30,12 +34,50 @@ This project was built as the dissertation artefact for an MSc in Software Devel
 - **Spring RestClient** with **Jackson 3** for external API calls
 - **JUnit 5** and **Mockito** for testing
 - **Maven 3.9.9** for build management
+- **Docker** and **Docker Compose** for containerised local runs
+- **GitHub Actions** for continuous integration
+- **Railway** for deployment
 
 ---
 
-## Prerequisites
+## Running with Docker (recommended)
 
-You will need:
+The entire application, including its PostgreSQL database, runs with a single command. No local Java, Maven, or PostgreSQL installation is required.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Cian-UL/travel-reccommendation.git
+cd travel-recommendation
+```
+
+### 2. Provide your API keys
+
+Copy the environment template and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` and set `DB_PASSWORD` (any value you choose for the local database), `OPENTRIPMAP_KEY`, and `LITEAPI_KEY`. The `.env` file is gitignored and never committed.
+
+### 3. Start everything
+
+```bash
+docker compose up --build
+```
+
+This builds the application image, starts a PostgreSQL container, waits for it to be healthy, then starts the app. Open [http://localhost:8080](http://localhost:8080) once it has started.
+
+To stop, press `Ctrl+C`, then `docker compose down`. Use `docker compose down -v` to also wipe the database volume for a clean slate.
+
+---
+
+## Running Locally Without Docker
+
+If you would rather run the application directly against a local PostgreSQL instance:
+
+### Prerequisites
 
 - Java 23 or later
 - Maven 3.9 or later
@@ -43,30 +85,17 @@ You will need:
 - A database named `travel_project_database` owned by user `postgres`
 - API keys for OpenTripMap and LiteAPI (both have free tiers)
 
----
-
-## Setup
-
-### 1. Clone the repository
-
-```bash
-git clone <repository-url>
-cd travel_recommendation
-```
-
-### 2. Create the database
-
-Connect to your local PostgreSQL instance and create the database:
+### 1. Create the database
 
 ```sql
 CREATE DATABASE travel_project_database;
 ```
 
-The application uses Hibernate's `ddl-auto=update` mode, so the schema will be created automatically on first startup. Seed data for fifteen European destinations is loaded from `src/main/resources/data.sql` using idempotent inserts, so the application can be restarted without producing duplicate rows.
+The application uses Hibernate's `ddl-auto=update` mode, so the schema is created automatically on first startup. Seed data for fifteen European destinations is loaded from `src/main/resources/data.sql` using idempotent inserts, so the application can be restarted without producing duplicate rows.
 
-### 3. Set environment variables
+### 2. Set environment variables
 
-The application reads three environment variables. None of them are committed to the repository.
+The application reads the following environment variables. None of them are committed to the repository.
 
 | Variable | Purpose | Where to get it |
 |---|---|---|
@@ -74,7 +103,7 @@ The application reads three environment variables. None of them are committed to
 | `OPENTRIPMAP_KEY` | OpenTripMap API key | [opentripmap.io](https://opentripmap.io/product) (free) |
 | `LITEAPI_KEY` | LiteAPI sandbox key | [liteapi.travel](https://liteapi.travel) (free sandbox) |
 
-Set them in your shell, your IDE's run configuration, or an `.env` file (not committed). For example, on macOS or Linux:
+Set them in your shell or your IDE's run configuration. For example, on macOS or Linux:
 
 ```bash
 export DB_PASSWORD=your_postgres_password
@@ -82,7 +111,15 @@ export OPENTRIPMAP_KEY=your_opentripmap_key
 export LITEAPI_KEY=your_liteapi_sandbox_key
 ```
 
-### 4. Run the application
+On Windows PowerShell:
+
+```powershell
+$env:DB_PASSWORD="your_postgres_password"
+$env:OPENTRIPMAP_KEY="your_opentripmap_key"
+$env:LITEAPI_KEY="your_liteapi_sandbox_key"
+```
+
+### 3. Run the application
 
 ```bash
 mvn spring-boot:run
@@ -109,6 +146,8 @@ The test suite contains twenty-eight tests across seven classes:
 - `TravelRecommendationApplicationTests` - Spring application context loads
 
 Service and DTO tests run in milliseconds using Mockito stubs. Repository tests load the full Spring context and require the database to be running.
+
+These tests also run automatically on every push via GitHub Actions, against a real PostgreSQL service container. See `.github/workflows/ci.yml`.
 
 ---
 
@@ -173,3 +212,13 @@ The application is configured against the LiteAPI sandbox environment, which ret
 ### In-memory budget filtering
 
 The current `SearchService` implementation loads all destinations from the database and filters in memory. This is acceptable at the current scale of fifteen destinations and keeps the cost calculation in a single testable location, but would not scale to a larger catalogue. Pushing the filter into the database (e.g., a derived query method on `DestinationRepo`) is identified as a future improvement.
+
+### Configuration through environment
+
+Database connection details, the server port, and the external API keys are all read from environment variables, with sensible local defaults. This lets the same build run unchanged on a developer machine, inside Docker Compose, in CI against a service container, and on Railway in production, with each environment supplying its own values.
+
+---
+
+## Deployment
+
+The application is deployed on [Railway](https://railway.app), which builds the image from the `Dockerfile` and runs it alongside a managed PostgreSQL instance. Database credentials and the server port are injected as environment variables at deploy time, and the app reads them through the same configuration described above. Pushes to `master` trigger an automatic redeploy.
